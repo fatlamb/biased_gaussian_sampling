@@ -34,6 +34,26 @@ void print_gslmat(gsl_matrix* mat)
 	cout <<"#--------------------------------------------------#"<<endl;
 }
 
+void linear_vector_ramp(gsl_vector * vec, double r_final)
+{
+	int nsamples=vec->size;
+
+	if (nsamples==1)
+	{
+		gsl_vector_set(vec,0,0);
+	}
+	else
+	{
+		int i;
+		double rfrac;
+		for(i=0; i<nsamples; i++)
+		{
+			rfrac=((double)i/((double)nsamples - 1));	
+			gsl_vector_set(vec,i,r_final*rfrac);
+		}
+	}
+}
+
 double P(double k)
 {
 	//Using a decaying exponential as a dummy power spectrum.
@@ -130,7 +150,7 @@ void calculate_cov(gsl_matrix* cov_mat, gsl_vector* sample_radii, double k_cutof
 int main()
 {
 	
-	int nsamples = 5; //Total number, including origin sample.
+	int nsamples = 10; //Total number, including origin sample.
 	double r_final=10; //Final radius.  
 	double k_cutoff=10; //Cutoff in spatial frequency.
 	
@@ -138,17 +158,8 @@ int main()
 	gsl_vector* sample_radii = gsl_vector_alloc(nsamples);	
 
 	//Fill sample radius vector.
-	int i;
-	double rfrac;
-	for(i=0; i<nsamples; i++)
-	{
-		rfrac=((double)i/((double)nsamples - 1));	
-		gsl_vector_set(sample_radii,i,r_final*rfrac);
-	}
-
-
+	linear_vector_ramp(sample_radii,r_final);
 	
-
 
 	//Initialize covariance matrix:
 
