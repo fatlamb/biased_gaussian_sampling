@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "Utils.h"
 
 void print_gslvec(gsl_vector* vec)
 {

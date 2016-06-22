@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Utils.h"
+#include "Covgen.h"
 
 double P(double k)
 {

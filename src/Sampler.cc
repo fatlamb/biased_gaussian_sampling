@@ -6,6 +6,7 @@
 
 #include "Covgen.h"
 #include "Utils.h"
+#include "Projection.h"
 
 int main()
 {
@@ -25,11 +26,25 @@ int main()
 
 	gsl_matrix* cov_mat = gsl_matrix_alloc(nsamples,nsamples);
 	
+	
+
+	
+
+
 	print_gslmat(cov_mat);
 	print_gslvec(sample_radii);
 
 	calculate_cov(cov_mat,sample_radii,k_cutoff);
 	print_gslmat(cov_mat);
+
+	gsl_vector* btwid = gsl_vector_alloc(nsamples);	
+	gsl_matrix* Pi = gsl_matrix_alloc(nsamples,nsamples);
+	double nu=2;
+
+	construct_projector(Pi, btwid, cov_mat, nu);
+
+	print_gslmat(Pi);
+	print_gslvec(btwid);
 
 	gsl_vector_free(sample_radii);
 	gsl_matrix_free(cov_mat);
