@@ -4,55 +4,7 @@
 
 #include <iostream>
 
-using namespace std; //FIXME: use explicit namespaces in refined version.
-
-const double pi=acos(-1.0);
-
-
-void print_gslvec(gsl_vector* vec)
-{
-	int i;
-	for(i=0; i<vec->size; i++)
-	{
-		cout << gsl_vector_get(vec,i) << endl;
-	}
-}
-
-void print_gslmat(gsl_matrix* mat)
-{
-	cout <<"#--------------------------------------------------#"<<endl;
-	int i,j;
-	for(i=0; i<mat->size1; i++)
-	{
-		for(j=0; j<mat->size2; j++)
-		{
-			cout << gsl_matrix_get(mat,i,j) << "  ";
-		}
-
-		cout << endl;
-	}
-	cout <<"#--------------------------------------------------#"<<endl;
-}
-
-void linear_vector_ramp(gsl_vector * vec, double r_final)
-{
-	int nsamples=vec->size;
-
-	if (nsamples==1)
-	{
-		gsl_vector_set(vec,0,0);
-	}
-	else
-	{
-		int i;
-		double rfrac;
-		for(i=0; i<nsamples; i++)
-		{
-			rfrac=((double)i/((double)nsamples - 1));	
-			gsl_vector_set(vec,i,r_final*rfrac);
-		}
-	}
-}
+#include "Utils.h"
 
 double P(double k)
 {
@@ -146,32 +98,3 @@ void calculate_cov(gsl_matrix* cov_mat, gsl_vector* sample_radii, double k_cutof
 		}
 	}
 }	
-
-int main()
-{
-	
-	int nsamples = 10; //Total number, including origin sample.
-	double r_final=10; //Final radius.  
-	double k_cutoff=10; //Cutoff in spatial frequency.
-	
-	//Initialize sample radius vector.
-	gsl_vector* sample_radii = gsl_vector_alloc(nsamples);	
-
-	//Fill sample radius vector.
-	linear_vector_ramp(sample_radii,r_final);
-	
-
-	//Initialize covariance matrix:
-
-	gsl_matrix* cov_mat = gsl_matrix_alloc(nsamples,nsamples);
-	
-	print_gslmat(cov_mat);
-	print_gslvec(sample_radii);
-
-	calculate_cov(cov_mat,sample_radii,k_cutoff);
-	print_gslmat(cov_mat);
-
-	gsl_vector_free(sample_radii);
-	gsl_matrix_free(cov_mat);
-	return 0;
-}
