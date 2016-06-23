@@ -3,6 +3,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_eigen.h>
 
 #include <stdexcept>
 #include <iostream>
@@ -90,4 +91,47 @@ void cholesky_decomp(gsl_matrix* M, gsl_matrix* A)
 		}
 	}			
 
+}
+
+
+void print_eigenstuff(gsl_matrix* M)
+{
+	
+	//Check matrix dimensions.
+	if(M->size1 != M->size2)
+	{
+		throw std::runtime_error("(gsl_matrix*) M is not square!");
+ 	}
+	
+	int n = M->size1;
+
+	gsl_vector *eval = gsl_vector_alloc (n);
+	gsl_matrix *evec = gsl_matrix_alloc (n, n);
+	
+	gsl_eigen_symmv_workspace * w = 
+		gsl_eigen_symmv_alloc (n);
+	
+	gsl_eigen_symmv (M, eval, evec, w);
+	
+	gsl_eigen_symmv_free (w);
+	
+	gsl_eigen_symmv_sort (eval, evec, 
+		GSL_EIGEN_SORT_ABS_ASC);
+	
+	int i;
+	for (i = 0; i < n; i++)
+	{
+		double eval_i 
+		 	= gsl_vector_get (eval, i);
+		gsl_vector_view evec_i 
+			= gsl_matrix_column (evec, i);
+		
+		printf ("eigenvalue = %g\n", eval_i);
+		//printf ("eigenvector = \n");
+		//gsl_vector_fprintf (stdout, 
+		//&evec_i.vector, "%g");
+	}
+	
+	gsl_vector_free (eval);
+	gsl_matrix_free (evec);
 }

@@ -15,25 +15,38 @@
 int main()
 {
 	//Define sampling parameters.	
-	int nsamples = 4; //Total number, including origin sample.
+	int nsamples = 100; //Total number, including origin sample.
 	double r_final=10; //Final radius.  
 	double k_cutoff=10; //Cutoff in spatial frequency.
-	double nu=2; //Total field value at origin.
+	double nu=1; //Total field value at origin.
+
+	//Define output filename.
+	std::string filename = "output/fields.txt";
 	
 	//Initialize sample radius vector.
 	gsl_vector* sample_radii = gsl_vector_alloc(nsamples);	
 
+
+
 	//Fill sample radius vector.
 	linear_vector_ramp(sample_radii,r_final);
 	
+	print_gslvec(sample_radii);
 	//Initialize covariance matrix:
 	gsl_matrix* cov_mat = gsl_matrix_alloc(nsamples,nsamples);
+	gsl_matrix* cov_mat_pre = gsl_matrix_alloc(nsamples,nsamples);
 	
 	//Fill covariance matrix using two point functions on our gaussian field.
 	//These two point functions are defined by the power spectrum, P(k),
 	//defined in CovGen.cc.	
-	calculate_cov(cov_mat,sample_radii,k_cutoff);
+	//calculate_cov(cov_mat,sample_radii,k_cutoff);
+	//precalculate_cov(cov_mat_pre,sample_radii,k_cutoff);
+	precalculate_cov(cov_mat,sample_radii,k_cutoff);
 
+	print_gslmat(cov_mat);
+	//print_gslmat(cov_mat_pre);
+
+	print_eigenstuff(cov_mat);
 
 	//Construct the projection matrix Pi and offset vector btwid.
 	//These will project a sample vector onto the \phi=\nu constraint
@@ -68,7 +81,6 @@ int main()
 	gsl_vector_add(y,btwid);
 
 	//Write out the radii and sampled field values.
-	std::string filename = "fields.txt";
 	std::vector<gsl_vector*> vecs = {sample_radii,y};
 	write_gslvecs(vecs,filename);
 
@@ -82,6 +94,5 @@ int main()
 	gsl_matrix_free(Pi);
 	gsl_matrix_free(A);
 	gsl_matrix_free(M);
-
 	return 0;
 }
