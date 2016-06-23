@@ -1,8 +1,6 @@
 #ifndef __COVGEN_H_INCLUDED__
 #define __COVGEN_H_INCLUDED__
 
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_integration.h>
 #include <gsl/gsl_matrix.h>
 
 double P(double k);

@@ -2,10 +2,11 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_matrix.h>
 
+#include <stdexcept>
 #include <iostream>
 
 #include "Utils.h"
-#include "Covgen.h"
+#include "CovGen.h"
 
 double P(double k)
 {
@@ -64,10 +65,22 @@ void calculate_cov(gsl_matrix* cov_mat, gsl_vector* sample_radii, double k_cutof
 	//Fill the covariance matrix by calculating the corresponding field
 	//covariances with calculate_cov_element().
 
+
+	//Check matrix and vector dimensions.
+	if(cov_mat->size1 != cov_mat->size2)
+	{
+		throw std::runtime_error("Covariance matrix (gsl_matrix*) cov_mat is not square!");
+	}
+	if(cov_mat->size1 != sample_radii->size)
+	{
+		throw std::runtime_error("Covariance matrix (gsl_matrix*) cov_mat does not have the same dimension as (gsl_vector*) sample_radii!");
+	}
+
+
+
 	//Calculate an epsilon for use in zero-comparison for the r=0 branch
 	//of the sinc function! This is a tad complicated because these 
 	//calculations should work for nsamples >= 0.
-
 	int nsamples=sample_radii->size;
 	double epsilon;
 	if (nsamples==1)

@@ -1,8 +1,6 @@
 #ifndef __PROJECTION_H_INCLUDED__
 #define __PROJECTION_H_INCLUDED__
 
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_integration.h>
 #include <gsl/gsl_matrix.h>
 
 void gslvector_outer_product(gsl_vector* vec1, gsl_vector* vec2, gsl_matrix* prod);
