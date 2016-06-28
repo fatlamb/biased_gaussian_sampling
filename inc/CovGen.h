@@ -8,6 +8,7 @@ double ksinc(double r, double k, double epsilon);
 double f(double k, void* params);
 double calculate_cov_element(double r1,double r2,double k_cutoff,double epsilon);
 void calculate_cov(gsl_matrix* cov_mat, gsl_vector* sample_radii, double k_cutoff);
+void calculate_cov_fast(gsl_matrix* cov_mat, gsl_vector* sample_radii, double k_cutoff);
 void precalculate_cov(gsl_matrix* cov_mat, gsl_vector* sample_radii, double k_cutoff);
 
 

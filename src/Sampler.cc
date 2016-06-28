@@ -18,7 +18,7 @@ int main()
 	int nsamples = 100; //Total number, including origin sample.
 	double r_final=10; //Final radius.  
 	double k_cutoff=10; //Cutoff in spatial frequency.
-	double nu=1; //Total field value at origin.
+	double nu=10; //Total field value at origin.
 
 	//Define output filename.
 	std::string filename = "output/fields.txt";
@@ -34,19 +34,61 @@ int main()
 	print_gslvec(sample_radii);
 	//Initialize covariance matrix:
 	gsl_matrix* cov_mat = gsl_matrix_alloc(nsamples,nsamples);
-	gsl_matrix* cov_mat_pre = gsl_matrix_alloc(nsamples,nsamples);
+	gsl_matrix* cov_mat_fast = gsl_matrix_alloc(nsamples,nsamples);
 	
 	//Fill covariance matrix using two point functions on our gaussian field.
 	//These two point functions are defined by the power spectrum, P(k),
 	//defined in CovGen.cc.	
-	//calculate_cov(cov_mat,sample_radii,k_cutoff);
+
+	/*
+	clock_t start,end;
+	double cpu_time_used;
+	
+	
+	start=clock();
+	calculate_cov(cov_mat,sample_radii,k_cutoff);
+	end=clock();
+	cpu_time_used = ((double) (end-start))/CLOCKS_PER_SEC;
 	//precalculate_cov(cov_mat_pre,sample_radii,k_cutoff);
-	precalculate_cov(cov_mat,sample_radii,k_cutoff);
+	//precalculate_cov(cov_mat,sample_radii,k_cutoff);
+	std::cout << "COV CALC TIME:  " << cpu_time_used << "   (Seconds)" << std::endl;
 
+	start=clock();
+	calculate_cov_fast(cov_mat_fast,sample_radii,k_cutoff);
+	end=clock();
+	cpu_time_used = ((double) (end-start))/CLOCKS_PER_SEC;
+	//precalculate_cov(cov_mat_pre,sample_radii,k_cutoff);
+	//precalculate_cov(cov_mat,sample_radii,k_cutoff);
+	std::cout << "COV CALC TIME FAST:  " << cpu_time_used << "   (Seconds)" << std::endl;
+	*/
+	//calculate_cov(cov_mat,sample_radii,k_cutoff);
+	calculate_cov_fast(cov_mat,sample_radii,k_cutoff);
+
+
+	//print_gslmat(cov_mat);
 	print_gslmat(cov_mat);
-	//print_gslmat(cov_mat_pre);
+	
 
-	print_eigenstuff(cov_mat);
+	gsl_matrix* cpy = gsl_matrix_alloc(nsamples,nsamples);
+	gsl_matrix* A = gsl_matrix_alloc(nsamples,nsamples);
+
+	gsl_matrix_memcpy(cpy,cov_mat);
+	eigendecomp(cpy,A);
+
+	gsl_matrix* prod = gsl_matrix_alloc(nsamples,nsamples);
+    gsl_blas_dgemm(CblasNoTrans,CblasTrans,1.0,A,A,0.0,prod);
+
+	print_gslmat(prod);
+	double min_el = extreme_matrix_el(cov_mat,true);
+
+	gsl_matrix_sub(prod,cov_mat);
+	double max_diff = extreme_matrix_el(prod,false);
+
+	std::cout << "MAX(ABS(DIFF)):  " << max_diff << std::endl;
+	std::cout << "MIN(ABS(COV)):  " << min_el << std::endl;
+	std::cout << "RATIO:  " << max_diff/min_el << std::endl;
+
+
 
 	//Construct the projection matrix Pi and offset vector btwid.
 	//These will project a sample vector onto the \phi=\nu constraint
@@ -60,8 +102,8 @@ int main()
 	//decomposition on the covariance matrix cov_mat. This will
 	//generate samples with covariance cov_mat from centered 
 	//unit normal vectors.
-	gsl_matrix* A=gsl_matrix_alloc(nsamples,nsamples);
-	cholesky_decomp(cov_mat,A);
+	//gsl_matrix* A=gsl_matrix_alloc(nsamples,nsamples);
+	//cholesky_decomp(cov_mat,A);
 
 	//Precomputing the product (Pi*A) of projection and covariance-conversion.
     gsl_matrix* M = gsl_matrix_alloc(nsamples,nsamples);
@@ -94,5 +136,6 @@ int main()
 	gsl_matrix_free(Pi);
 	gsl_matrix_free(A);
 	gsl_matrix_free(M);
+
 	return 0;
 }

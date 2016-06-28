@@ -126,12 +126,116 @@ void print_eigenstuff(gsl_matrix* M)
 		gsl_vector_view evec_i 
 			= gsl_matrix_column (evec, i);
 		
+
+
 		printf ("eigenvalue = %g\n", eval_i);
 		//printf ("eigenvector = \n");
 		//gsl_vector_fprintf (stdout, 
 		//&evec_i.vector, "%g");
 	}
+	gsl_matrix* product = gsl_matrix_alloc(n,n);
+	gsl_blas_dgemm(CblasTrans,CblasNoTrans,1.0,evec,evec,0.0,product);
+	print_gslmat(product);
 	
 	gsl_vector_free (eval);
 	gsl_matrix_free (evec);
 }
+
+
+
+void eigendecomp(gsl_matrix* M, gsl_matrix* A)
+{
+    //Check matrix dimensions.
+    if(M->size1 != M->size2)
+    {
+        throw std::runtime_error("(gsl_matrix*) M is not square!");
+    }
+    if(A->size1 != A->size2)
+    {
+        throw std::runtime_error("(gsl_matrix*) A is not square!");
+    }
+    if(M->size1 != A->size1)
+    {
+        throw std::runtime_error("(gsl_matrix*) M dimensions do not match those of (gsl_matrix*) A!");
+    }
+	
+	int n = M->size1;
+
+	gsl_vector *eval = gsl_vector_alloc (n);
+	gsl_matrix *evec = gsl_matrix_alloc (n, n);
+	
+	gsl_eigen_symmv_workspace * w = 
+		gsl_eigen_symmv_alloc (n);
+	
+	gsl_eigen_symmv (M, eval, evec, w);
+	
+	gsl_eigen_symmv_free (w);
+	
+
+
+	gsl_matrix* diagroot = gsl_matrix_alloc(n,n);
+	gsl_matrix_set_zero(diagroot);
+	
+	int i;
+	double eval_i;
+	double sqrt_eval_i;
+
+	for (i = 0; i < n; i++)
+	{
+		eval_i = gsl_vector_get (eval, i);
+
+		if(eval_i<0.0)
+		{
+			eval_i=0.0;
+		}
+
+		sqrt_eval_i=sqrt(eval_i);
+		gsl_matrix_set(diagroot,i,i,sqrt_eval_i);
+	}
+
+	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,evec,diagroot,0.0,A);
+	
+	gsl_vector_free (eval);
+	gsl_matrix_free (evec);
+	gsl_matrix_free (diagroot);
+}
+
+
+double extreme_matrix_el(gsl_matrix* A, bool min)
+{
+    //Check matrix dimensions.
+    if(A->size1 != A->size2)
+    {
+        throw std::runtime_error("(gsl_matrix*) A is not square!");
+    }
+
+	int n = A->size1;
+
+    int i,j;
+    double ext,test;
+    ext=fabs(gsl_matrix_get(A,0,0));
+    for (i=0; i<n; i++)
+    {
+        for (j=0; j<n; j++)
+        {
+            test = fabs(gsl_matrix_get(A,i,j));
+			if(min)
+			{
+            	if(test<ext)
+            	{
+                	ext=test;
+            	}
+			}
+
+			else	
+			{
+            	if(test>ext)
+            	{
+                	ext=test;
+            	}
+			}
+        }
+    }
+	return ext;
+}
+

@@ -11,6 +11,9 @@ void print_gslmat(gsl_matrix* mat);
 void linear_vector_ramp(gsl_vector * vec, double r_final);
 void cholesky_decomp(gsl_matrix* M, gsl_matrix* A);
 void print_eigenstuff(gsl_matrix* M);
+void eigendecomp(gsl_matrix* M,gsl_matrix* A);
+double extreme_matrix_el(gsl_matrix* A, bool min);
+
 
 
 #endif // __UTILS_H_INCLUDED__
